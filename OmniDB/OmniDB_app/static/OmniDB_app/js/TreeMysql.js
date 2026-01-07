@@ -3235,20 +3235,22 @@ function getExplainReturnMysql(p_data) {
     if (v_div_explain) {
         v_div_explain.style.backgroundColor = "#ffffff";
         v_div_explain.style.height = "100%";        
-        v_div_explain.style.minHeight = "";          
+        v_div_explain.style.minHeight = "";           
         v_div_explain.style.overflow = "hidden";    
-        v_div_explain.style.display = "flex";       
+        v_div_explain.style.display = "flex";        
         v_div_explain.style.flexDirection = "column"; 
     }
 
+    // --- CSS 样式定义 (Local Scope) ---
     var styles = `
         /* 滚动视口 */
         .mysql-vex-scope .explain-wrapper { 
             background-color: #ffffff; 
-            flex: 1;                  
-            overflow: auto;          
-            font-family: monospace; 
-            font-size: 16px; 
+            flex: 1;                   
+            overflow: auto;           
+            /* 使用 UI 字体，非等宽字体 */
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            font-size: 0.9em; 
             padding: 0px; 
             color: #000; 
             width: 100%; 
@@ -3260,18 +3262,33 @@ function getExplainReturnMysql(p_data) {
         /* 每一行 */
         .mysql-vex-scope .explain-row { 
             display: flex; 
-            line-height: 1.6; 
+            line-height: 1.8; 
             background-color: transparent; 
             white-space: pre;        
             position: relative; 
             margin-bottom: 0px; 
             transition: background-color 0.1s; 
-            width: 100%;             
+            width: 100%;              
             box-sizing: border-box;  
         }
         .mysql-vex-scope .explain-row:hover { outline: 1px solid #dbdbdb; z-index: 10; }
         
-        .mysql-vex-scope .row-idx { width: 25px; min-width: 25px; color: #555; font-weight: normal; text-align: right; padding-right: 5px; margin-right: 5px; border-right: none; user-select: none; z-index: 2; flex-shrink: 0; }
+        /* 行号列：强制盒模型和宽度，确保与表头对齐 */
+        .mysql-vex-scope .row-idx { 
+            width: 2.5em; 
+            min-width: 2.5em; 
+            box-sizing: border-box;
+            color: #000; 
+            font-weight: normal; 
+            text-align: right; 
+            padding-right: 0.5em; 
+            margin-right: 0.5em; 
+            border-right: 1px solid transparent; 
+            user-select: none; 
+            z-index: 2; 
+            flex-shrink: 0; 
+        }
+
         .mysql-vex-scope .row-content { flex: 1; z-index: 2; padding-right: 10px; display: flex; align-items: center; } 
         
         .mysql-vex-scope .keyword-op { color: #000; font-weight: normal; } 
@@ -3315,16 +3332,28 @@ function getExplainReturnMysql(p_data) {
 
         var rows = p_data.v_data.v_data;
 
-        // Header
+        // --- Header 配置 (关键对齐部分) ---
         var v_header = document.createElement('div');
-        v_header.style.cssText = 'position:relative;display:flex;align-items:center;margin-bottom:5px;padding-bottom:5px;border-bottom:none;width:100%; box-sizing: border-box;';
+        v_header.style.cssText = 'position:relative;display:flex;align-items:center;margin-bottom:5px;padding-bottom:5px;border-bottom:none;width:100%;box-sizing:border-box;';
         
         var v_sharp = document.createElement('div');
-        v_sharp.style.cssText = 'font-weight:bold;width:25px;min-width:25px;text-align:right;padding-right:5px;margin-right:5px;flex-shrink:0;';
+        // 这里必须完全模拟 .row-idx 的布局属性
+        v_sharp.style.cssText = `
+            width: 2.5em;
+            min-width: 2.5em;
+            box-sizing: border-box;
+            text-align: right;
+            padding-right: 0.5em;
+            margin-right: 0.5em;
+            flex-shrink: 0;
+            font-weight: 900;
+            color: #000;
+        `;
         v_sharp.innerText = '#';
         
         var v_title = document.createElement('div');
-        v_title.style.cssText = 'flex:1;text-align:left;font-weight:bold;';
+        // 标题字体与列表保持一致，字号加大
+        v_title.style.cssText = 'flex:1;text-align:center;font-weight:bold;font-size:1.2em;font-family:"Segoe UI", Roboto, Helvetica, Arial, sans-serif;';
         v_title.innerText = 'QUERY PLAN';
         
         v_header.appendChild(v_sharp);
@@ -3419,7 +3448,8 @@ function getExplainReturnMysql(p_data) {
 
                 var v_contentSpan = document.createElement('div');
                 v_contentSpan.className = 'row-content';
-                v_contentSpan.style.paddingLeft = (rowObj.indent * 4) + 'px';
+                // 缩进修正：使用 0.5em，避免层级过深时太宽
+                v_contentSpan.style.paddingLeft = (rowObj.indent * 0.5) + 'em';
 
                 if (rowObj.isCTE) {
                     v_rowDiv.classList.add('cte-row'); 
@@ -3751,7 +3781,7 @@ function getExplainReturnMysql(p_data) {
                 // 详情面板
                 function showDetails(d) {
                     let html = `<div style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid #eee;">
-                                    <h3 style="margin:0;color:#2c3e50;font-size:13px;">${d.data["Node Type"]}</h3>
+                                    <h3 style="margin:0;color:#2c3e50;font-size:12px;">${d.data["Node Type"]}</h3>
                                     ${d.data["Relation Name"] ? `<div style="color:#7f8c8d;font-size:11px;">${d.data["Relation Name"]}</div>` : ''}
                                 </div>`;
                     let props = {}; 
@@ -3805,7 +3835,7 @@ function getExplainReturnMysql(p_data) {
             <div id="vex-modal" style="width: 90%; height: 90%; background: #fff; border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; font-family: 'Segoe UI', sans-serif;">
                 <div class="vex-modal-head" style="padding: 0 15px; height: 45px; background: #f8f9fa; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
                     <div style="display:flex;align-items:center;gap:10px;">
-                        <span style="font-weight: 600; color: #444; font-size: 14px;">Graphical Explain</span>
+                        <span style="font-weight: 600; color: #444; font-size: 12px;">Graphical Explain</span>
                         <span style="background:#e8f5e9;color:#2e7d32;padding:2px 6px;border-radius:4px;font-size:10px;">Compact</span>
                     </div>
                     <button style="border:none;background:none;font-size:22px;color:#999;cursor:pointer;line-height:1;" onclick="document.getElementById('vex-overlay').remove()">×</button>
@@ -3870,19 +3900,81 @@ function getExplainReturnMysql(p_data) {
 // --- CSS for List View (Main Window) ---
 (function(){
     const LIST_CSS = `
-        .mysql-vex-scope .explain-wrapper { background-color: #ffffff; flex: 1; overflow: auto; font-family: monospace; font-size: 16px; padding: 0px; color: #000; display: flex; flex-direction: column; }
-        .mysql-vex-scope .explain-row { display: flex; line-height: 1.6; white-space: pre; position: relative; margin-bottom: 0px; width: 100%; box-sizing: border-box; }
+        .mysql-vex-scope .explain-wrapper { 
+            background-color: #ffffff; 
+            flex: 1; 
+            overflow: auto; 
+            /* 1. 改为 UI 字体 + 弹性单位 */
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 0.9em; 
+            padding: 0px; 
+            color: #000; 
+            display: flex; 
+            flex-direction: column; 
+        }
+    
+        .mysql-vex-scope .explain-row { 
+            display: flex; 
+            /* 2. 行高保持相对比例 */
+            line-height: 1.8; 
+            white-space: pre; 
+            position: relative; 
+            margin-bottom: 0px; 
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+    
         .mysql-vex-scope .explain-row:hover { outline: 1px solid #dbdbdb; z-index: 10; }
-        .mysql-vex-scope .row-idx { width: 25px; min-width: 25px; color: #555; text-align: right; padding-right: 5px; margin-right: 5px; user-select: none; flex-shrink: 0; border-right: 1px solid transparent; }
-        .mysql-vex-scope .row-content { flex: 1; padding-right: 10px; display: flex; align-items: center; overflow: hidden; } 
+    
+        /* 3. 强制对齐的行号样式 */
+        .mysql-vex-scope .row-idx { 
+            width: 2.5em; 
+            min-width: 2.5em; 
+            box-sizing: border-box; /* 关键 */
+            color: #000; 
+            text-align: right; 
+            padding-right: 0.5em; 
+            margin-right: 0.5em; 
+            user-select: none; 
+            flex-shrink: 0; 
+            border-right: 1px solid transparent;
+        }
+    
+        .mysql-vex-scope .row-content { 
+            flex: 1; 
+            padding-right: 10px; 
+            display: flex; 
+            align-items: center; 
+            overflow: hidden; 
+        } 
+    
         .mysql-vex-scope .keyword-op { color: #000; font-weight: normal; } 
         .mysql-vex-scope .metric-info { color: #666; font-size: 0.9em; } 
         .mysql-vex-scope .cte-row { font-weight: bold; border-bottom: 1px dashed #fadbd8; color: #e67e22 !important; }
-        .mysql-vex-scope .vex-toolbar { display: inline-block; vertical-align: middle; padding-left: 5px; margin: 5px 0; }
-        .mysql-vex-scope .vex-action-btn { width: 22px; height: 22px; display: inline-block; text-align: center; line-height: 22px; margin-right: 4px; cursor: pointer; color: #000; border-radius: 3px; }
+        
+        /* 工具栏保持相对单位 */
+        .mysql-vex-scope .vex-toolbar { display: inline-block; vertical-align: middle; padding-left: 0.5em; margin: 0.5em 0; }
+        .mysql-vex-scope .vex-action-btn { width: 2em; height: 2em; display: inline-block; text-align: center; line-height: 2em; margin-right: 0.5em; cursor: pointer; color: #000; border-radius: 3px; }
         .mysql-vex-scope .vex-action-btn:hover { background-color: #eee; }
-        .mysql-vex-scope .vex-tree-arrow { cursor: pointer; margin-right: 5px; color: #000; font-size: 14px; width: 16px; display: inline-block; text-align: center; }
-        .mysql-vex-scope .vex-leaf-dot { display: inline-block; width: 16px; text-align: center; margin-right: 5px; color: #ccc; font-size: 12px; }
+    
+        /* 4. 树形结构的箭头和点也改为 em */
+        .mysql-vex-scope .vex-tree-arrow { 
+            cursor: pointer; 
+            margin-right: 0.2em; 
+            color: #000; 
+            font-size: 1em; 
+            width: 1.5em; 
+            display: inline-block; 
+            text-align: center; 
+        }
+        .mysql-vex-scope .vex-leaf-dot { 
+            display: inline-block; 
+            width: 1.5em; 
+            text-align: center; 
+            margin-right: 0.2em; 
+            color: #ccc; 
+            font-size: 1em; 
+        }
     `;
     var existingStyle = document.getElementById('vex-list-style');
     if (existingStyle) existingStyle.remove();
@@ -3915,9 +4007,9 @@ window.getExplainReturnMysql = function(p_data) {
     if (v_div_explain) {
         v_div_explain.style.backgroundColor = "#ffffff";
         v_div_explain.style.height = "100%";        
-        v_div_explain.style.minHeight = "";          
+        v_div_explain.style.minHeight = "";           
         v_div_explain.style.overflow = "hidden";    
-        v_div_explain.style.display = "flex";       
+        v_div_explain.style.display = "flex";        
         v_div_explain.style.flexDirection = "column"; 
     }
 
@@ -3946,8 +4038,26 @@ window.getExplainReturnMysql = function(p_data) {
         var rows = p_data.v_data.v_data;
         // Header
         var v_header = document.createElement('div'); v_header.style.cssText = 'position:relative;display:flex;align-items:center;margin-bottom:5px;padding-bottom:5px;border-bottom:none;width:100%; box-sizing: border-box;';
-        var v_sharp = document.createElement('div'); v_sharp.style.cssText = 'font-weight:bold;width:25px;min-width:25px;text-align:right;padding-right:5px;margin-right:5px;flex-shrink:0;'; v_sharp.innerText = '#';
-        var v_title = document.createElement('div'); v_title.style.cssText = 'flex:1;text-align:center;font-weight:bold;'; v_title.innerText = 'QUERY PLAN';
+        
+        var v_sharp = document.createElement('div');
+        // 确保 # 号与行号完全对齐
+        v_sharp.style.cssText = `
+            width: 2.5em;
+            min-width: 2.5em;
+            box-sizing: border-box;
+            text-align: right;
+            padding-right: 0.5em;
+            margin-right: 0.5em;
+            flex-shrink: 0;
+            font-weight: 900;
+            color: #000;
+        `;
+        v_sharp.innerText = '#';
+        
+        var v_title = document.createElement('div'); 
+        v_title.style.cssText = 'flex:1;text-align:center;font-weight:bold;font-size:1.2em;font-family:"Segoe UI", Roboto, Helvetica, Arial, sans-serif;'; 
+        v_title.innerText = 'QUERY PLAN';
+        
         v_header.appendChild(v_sharp); v_header.appendChild(v_title); v_plan_container.appendChild(v_header); 
 
         function getMetricValue(line) {
@@ -4012,15 +4122,13 @@ window.getExplainReturnMysql = function(p_data) {
                 
                 var v_contentSpan = document.createElement('div'); 
                 v_contentSpan.className = 'row-content'; 
-                v_contentSpan.style.paddingLeft = (rowObj.indent * 4) + 'px';
+                // 缩进优化：0.5em
+                v_contentSpan.style.paddingLeft = (rowObj.indent * 0.5) + 'em';
                 
                 // CTE 特殊处理
                 if (rowObj.isCTE) { 
                     v_rowDiv.classList.add('cte-row');
                     
-                    v_idxSpan.style.color = '#e67e22'; 
-                    v_idxSpan.style.fontWeight = 'bold';
-
                     if (i > 0) { 
                         v_rowDiv.style.marginTop = '15px'; 
                         v_rowDiv.style.borderTop = '1px solid #f0f0f0'; 
