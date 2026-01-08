@@ -3989,7 +3989,16 @@ function getExplainReturnMysql(p_data) {
 // =========================================================
 
 window.getExplainMysql = function(p_mode) {
-    var v_editor = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor;
+    // Get the current tab tab
+    var v_tag = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag;
+
+    // Optimization tips
+    if (!v_tag || !v_tag.div_explain) {
+        showAlert('The Explain feature is only available in the Query window, and charts cannot be displayed in the Console console.');
+        return; 
+    }
+
+    var v_editor = v_tag.editor;
     var v_query = v_editor.getSelectedText();
     if (v_query.trim() == '') v_query = v_editor.getValue();
     if (v_query.trim() == '') { showAlert('Please provide a string.'); return; }
@@ -3999,6 +4008,18 @@ window.getExplainMysql = function(p_mode) {
 
     querySQL(0, true, v_query, getExplainReturnMysql, true);
 };
+
+//window.getExplainMysql = function(p_mode) {
+//    var v_editor = v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.editor;
+//    var v_query = v_editor.getSelectedText();
+//    if (v_query.trim() == '') v_query = v_editor.getValue();
+//    if (v_query.trim() == '') { showAlert('Please provide a string.'); return; }
+
+//    if (p_mode == 0) v_query = 'EXPLAIN FORMAT=TREE ' + v_query; 
+//    else if (p_mode == 1) v_query = 'EXPLAIN ANALYZE ' + v_query; 
+
+//    querySQL(0, true, v_query, getExplainReturnMysql, true);
+//};
 
 window.getExplainReturnMysql = function(p_data) {
     v_connTabControl.selectedTab.tag.tabControl.selectedTab.tag.selectExplainTabFunc();
